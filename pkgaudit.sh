@@ -27,7 +27,7 @@
 #
 # Place this file in /usr/local/www/xymon/client/ext/
 # Then, to activate simply append the following to 
-# the /usr/local/www/xymon/client/etc/localclient.cfg file:
+# the /usr/local/www/xymon/client/etc/clientlaunch.cfg file:
 #
 #[pkg]
 #        ENVFILE $XYMONCLIENTHOME/etc/xymonclient.cfg
