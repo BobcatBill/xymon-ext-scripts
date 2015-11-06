@@ -105,6 +105,6 @@ ${STATUS}
 ${MSG}
 "
 
-rm ${TMPFILE}
+rm -f ${TMPFILE}
 
 exit 0
