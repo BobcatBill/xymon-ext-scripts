@@ -67,7 +67,7 @@ pkg-static audit ${PKGAUDIT_FLAGS} ${VULNXML} >> ${TMPFILE} || export NONGREEN=1
 
 # Check if we should run on jails too. Grep removes poudriere jails.
 if [ ${PKGAUDIT_JAILS} = "YES" ]; then
-	for i in $(jls | sed '1d' | egrep -v "${PKGAUDIT_JAILGREP}" | awk '{print $1}'); do
+	for i in $(jls -N | sed '1d' | sort | egrep -v "${PKGAUDIT_JAILGREP}" | awk '{print $1}'); do
 		JAILROOT=$(jls -j ${i} -h path | sed '1d')
 		{ echo "" ;
 		echo "##############################" ;
