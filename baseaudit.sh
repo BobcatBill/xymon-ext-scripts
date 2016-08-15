@@ -99,7 +99,7 @@ case "${BASEVER}" in
       ;;
     *RELEASE*)
       # It's a RELEASE, let's fixup the syntax
-      export BASEVER="$(echo ${BASEVER} | sed 's,^,FreeBSD-kernel-,;s,-RELEASE-p,_,;s,-RELEASE$,,')"
+      export BASEVER="$(echo ${BASEVER} | sed 's,^,FreeBSD-,;s,-RELEASE-p,_,;s,-RELEASE$,,')"
       ;;
     *)
       # It's probably an ALPHA, BETA, or RC. It's not a RELEASE!
@@ -114,6 +114,39 @@ printf "\n" >> ${TMPFILE}
 
 # Nothing to do on this server, exit
 [ ${NOKERNELVER} ] && [ ${NOBASEVER} ] && [ ${BASEAUDIT_JAILS} = "NO" ] && exit 0
+
+# Check if we should run on jails too. Grep removes poudriere jails.
+if [ ${BASEAUDIT_JAILS} = "YES" ]; then
+    for i in $(jls -N | sed '1d' | sort | egrep -v "${BASEAUDIT_JAILGREP}" | awk '{print $1}'); do
+        JAILROOT=$(jls -j ${i} -h path | sed '1d')
+        if [ -e ${JAILROOT}/bin/freebsd-version ]; then
+          BASEVER=$(jexec ${i} /bin/freebsd-version -u)
+          # Check to make sure we're working with a RELEASE for the base
+          case "${BASEVER}" in
+            *PRERELEASE*)
+              # Not a RELEASE, move to next jail
+              continue 
+              ;;
+            *RELEASE*)
+              # It's a RELEASE, let's fixup the syntax
+              export BASEVER="$(echo ${BASEVER} | sed 's,^,FreeBSD-,;s,-RELEASE-p,_,;s,-RELEASE$,,')"
+              ;;
+            *)
+              # It's probably an ALPHA, BETA, or RC. It's not a RELEASE! Move to next jail.
+              continue
+              ;;
+          esac
+        else
+          continue
+        fi
+        { echo "" ;
+        echo "##############################" ;
+        echo "" ;
+        echo "jail $(jls -j ${i} -h name | sed '/name/d') ${BASEVER} status" ;
+        echo "" ;
+        pkg-static -o PKG_DBDIR=${JAILROOT}/var/db/pkg audit ${BASEAUDIT_FLAGS} ${VULNXML} ${BASEVER} ; } >> ${TMPFILE} || export NONGREEN=1
+    done
+fi
 
 # Ingest all the pkg audit messages.
 MSG=$(cat ${TMPFILE})
