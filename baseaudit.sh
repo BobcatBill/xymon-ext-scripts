@@ -38,12 +38,12 @@
 # Now restart the xymon client to start using it.
 
 # These can be overridden in xymonclient.cfg
-: ${BASEAUDIT_COLOR="yellow"};         # Set color when results are found
-: ${BASEAUDIT_JAILS="NO"};             # Audit jails if they don't run their own xymon-client
-                                       # This needs to be capitalized "YES" to enable
-: ${BASEAUDIT_JAILGREP="poudriere"};   # Argument to egrep to remove jails with name patterns.
-: ${BASEAUDIT_FORCEFETCH="NO"};        # Attempt to always fetch vuln.xml -- every 5 mins!
-                                       # This needs to be capitalized "YES" to enable
+: ${BASEAUDIT_COLOR="yellow"}         # Set color when results are found
+: ${BASEAUDIT_JAILS="NO"}             # Audit jails if they don't run their own xymon-client
+                                      # This needs to be capitalized "YES" to enable
+: ${BASEAUDIT_JAILGREP="poudriere"}   # Argument to egrep to remove jails with name patterns.
+: ${BASEAUDIT_FORCEFETCH="NO"}        # Attempt to always fetch vuln.xml -- every 5 mins!
+                                      # This needs to be capitalized "YES" to enable
 
 # Xymon doesn't have /usr/local in PATH
 PATH=${PATH}:/usr/local/bin:/usr/local/sbin
@@ -61,7 +61,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Build the pkg-audit message header for main host
-echo "$(hostname) pkg audit status" >> ${TMPFILE}
+echo "$(hostname) base audit status" >> ${TMPFILE}
 echo "" >> ${TMPFILE}
 
 # If BASEAUDIT_FORCEFETCH is enabled, pass -F flag and set VULNXML to a path where Xymon can write
@@ -120,7 +120,7 @@ if [ ${BASEAUDIT_JAILS} = "YES" ]; then
     for i in $(jls -N | sed '1d' | sort | egrep -v "${BASEAUDIT_JAILGREP}" | awk '{print $1}'); do
         JAILROOT=$(jls -j ${i} -h path | sed '1d')
         if [ -e ${JAILROOT}/bin/freebsd-version ]; then
-          BASEVER=$(jexec ${i} /bin/freebsd-version -u)
+          BASEVER=$(${JAILROOT}/bin/freebsd-version -u)
           # Check to make sure we're working with a RELEASE for the base
           case "${BASEVER}" in
             *PRERELEASE*)
