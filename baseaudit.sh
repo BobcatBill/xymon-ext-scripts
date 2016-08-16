@@ -68,7 +68,7 @@ echo "" >> ${TMPFILE}
 [ ${BASEAUDIT_FORCEFETCH} = "YES" ] && BASEAUDIT_FLAGS="${BASEAUDIT_FLAGS} -F" && VULNXML="-f /usr/local/www/xymon/client/tmp/vuln.xml"
 
 if [ -e /bin/freebsd-version ] ; then
-    export KERNELVER="$(freebsd-version -k)"
+    export KERNELVER="$(uname -r)"
     export BASEVER="$(freebsd-version -u)"
 else
     export NOBASEVER=YES # No freebsd-update, can't reliably identify base version
