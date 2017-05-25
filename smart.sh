@@ -50,12 +50,17 @@ COLUMN=smart
 MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd)'); do
 	OUTPUT=$(sudo smartctl -a /dev/${i});
 	SERIAL=$(echo "${OUTPUT}" | awk '/Serial/ {print $3}')
+        if [ "x${SERIAL}" == "x" ]; then SERIAL="null"; fi
 	MODEL=$(echo "${OUTPUT}" | awk '/Device Model/ {print $3,$4}')
+        if [ "x${MODEL}" == "x" ]; then MODEL="null"; fi
 	REALLOCATED=$(echo "${OUTPUT}" | awk '/Reallocated_Sector/ {print $10}')
+        if [ "x${REALLOCATED}" == "x" ]; then REALLOCATED=0; fi
 	TEMP=$(echo "${OUTPUT}" | awk '/Temperature_Celsius/ {print $10}')
-	if [ ${REALLOCATED} -gt 0 ] ; then
+        if [ "x${TEMP}" == "x" ]; then TEMP=0; fi
+
+	if [ "${REALLOCATED}" -gt 0 ] ; then
 		HEALTH="FAILED"
-	elif [ ${TEMP} -gt 45 ] ; then
+	elif [ "${TEMP}" -gt 45 ] ; then
                 HEALTH="FAILED"
 	else
 		HEALTH=$(echo "${OUTPUT}" | grep "overall-health")
@@ -65,18 +70,28 @@ MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd)
                 *PASSED)
 			echo "&green ${i} PASSED [ Serial: ${SERIAL} Model: ${MODEL} Reallocated: ${REALLOCATED} Temp: ${TEMP} ]"
                         ;;
+                "")
+			echo "&yellow ${i} PASSED [ Serial: ${SERIAL} Model: ${MODEL} Reallocated: ${REALLOCATED} Temp: ${TEMP} ]"
+                        ;;
 		*)
 			echo "&red ${i} FAILED [ Serial: ${SERIAL} Model: ${MODEL} Reallocated: ${REALLOCATED} Temp: ${TEMP} ]"
+			;;
 	esac
 done)
 
 STATUS="$(hostname) SMART health status"
 
-if (echo "${MSG}" | grep -q FAILED); then
-	COLOR=red
-else
-	COLOR=green
-fi
+case "${MSG}" in
+	*'&red'*)
+		COLOR=red
+		;;
+	*'&yellow'*)
+		COLOR=yellow
+		;;
+	*)
+		COLOR=green
+		;;
+esac
 
 ${XYMON} ${XYMSRV} "status ${MACHINE}.${COLUMN} ${COLOR} $(date)
 
