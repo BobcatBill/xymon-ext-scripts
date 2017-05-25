@@ -48,6 +48,12 @@ PATH=${PATH}:/usr/local/bin:/usr/local/sbin
 COLUMN=smart
 
 MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd)'); do
+
+	# Skip if listed in kern.disks but no device node exists
+	if [ ! -e /dev/${i} ]; then
+		continue;
+	fi
+
 	OUTPUT=$(sudo smartctl -a /dev/${i});
 	SERIAL=$(echo "${OUTPUT}" | awk '/Serial/ {print $3}')
         if [ "x${SERIAL}" == "x" ]; then SERIAL="null"; fi
