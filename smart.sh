@@ -54,7 +54,7 @@ MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd|
 		continue;
 	fi
 
-	OUTPUT=$(sudo smartctl -a /dev/${i});
+	OUTPUT=$(smartctl -a /dev/${i});
 	SERIAL=$(echo "${OUTPUT}" | awk '/Serial/ {print $3}')
         if [ "x${SERIAL}" == "x" ]; then SERIAL="null"; fi
 	MODEL=$(echo "${OUTPUT}" | awk '/Device Model/ {print $3,$4}')
