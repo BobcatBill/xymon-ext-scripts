@@ -47,7 +47,7 @@ PATH=${PATH}:/usr/local/bin:/usr/local/sbin
 
 COLUMN=smart
 
-MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd)'); do
+MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd|da0)'); do
 
 	# Skip if listed in kern.disks but no device node exists
 	if [ ! -e /dev/${i} ]; then
@@ -64,9 +64,9 @@ MSG=$(for i in $(sysctl -n kern.disks | tr ' ' '\n' | sort | egrep -v '^(cd|nvd)
 	TEMP=$(echo "${OUTPUT}" | awk '/Temperature_Celsius/ {print $10}')
         if [ "x${TEMP}" == "x" ]; then TEMP=0; fi
 
-	if [ "${REALLOCATED}" -gt 0 ] ; then
+	if [ "${REALLOCATED}" -lt 0 ] ; then
 		HEALTH="FAILED"
-	elif [ "${TEMP}" -gt 45 ] ; then
+	elif [ "${TEMP}" -gt 50 ] ; then
                 HEALTH="FAILED"
 	else
 		HEALTH=$(echo "${OUTPUT}" | grep "overall-health")
