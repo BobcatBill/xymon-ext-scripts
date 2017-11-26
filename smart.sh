@@ -1,6 +1,5 @@
 #!/bin/sh
 #-
-# Comment
 # Copyright (c) 2015 Mark Felder
 # All rights reserved
 #
